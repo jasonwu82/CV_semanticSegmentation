@@ -5,8 +5,6 @@ import os
 def read_filenames_from_txt(filename_file):
   with open(filename_file) as f:
     lines = f.read().splitlines()
-  #except Exception as error: 
-  #  print(error)
   return lines
 def create_queue(filenames,data_dir_path,label_dir_path):
 	'''
