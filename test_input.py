@@ -1,7 +1,7 @@
 from input_assg2 import *
 from PIL import Image
-
-BATCH_SIZE = 5
+import settings
+BATCH_SIZE = settings.BATCH_SIZE
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'
 LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
