@@ -1,7 +1,7 @@
 import tensorflow as tf
 import settings
 
-LEARNING_RATE_DECAY_FACTOR = setting.LEARNING_RATE_DECAY_FACTOR  # Learning rate decay factor.
+LEARNING_RATE_DECAY_FACTOR = settings.LEARNING_RATE_DECAY_FACTOR  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = settings.INITIAL_LEARNING_RATE       # Initial learning rate.
 def _variable_with_weight_decay(name, shape, stddev, wd):
   """Helper to create an initialized Variable with weight decay.

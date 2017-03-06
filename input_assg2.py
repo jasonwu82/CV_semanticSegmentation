@@ -1,6 +1,6 @@
 import tensorflow as tf
 import os
-
+import settings
 
 def read_filenames_from_txt(filename_file):
   with open(filename_file) as f:
