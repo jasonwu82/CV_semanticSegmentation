@@ -5,6 +5,7 @@ import train_pal
 import time
 import datetime
 import loss_pal
+import numpy
 steps = 0
 def actual_train():
 	#with tf.Graph().as_default():
@@ -12,7 +13,7 @@ def actual_train():
     data_queue,label_queue = create_queue(filenames,DATA_DIR,LABEL_DIR)
     result = read_PAS(data_queue, label_queue)
     global_step = tf.contrib.framework.get_or_create_global_step()
-    images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
+    images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=3,
                                 batch_size=BATCH_SIZE, shuffle=True)
     # Get images and labels for CIFAR-10.
     #images, labels = cifar10.distorted_inputs()
@@ -27,8 +28,8 @@ def actual_train():
     #resized = tf.image.resize_images(input_tensor, [new_height, new_width])
     
     #tf.shape(labels_batch)
-    #loss = loss_pal.loss(logits,labels_batch)
-    loss = tf.zeros([20,20,20])
+    loss = loss_pal.loss(logits,labels_batch)
+    #loss = tf.ones([1,2])
     #loss = tf.reduce_sum(logits)
     # Build a Graph that trains the model with one batch of examples and
     # updates the model parameters.
@@ -58,11 +59,18 @@ def actual_train():
                         'sec/batch)')
           print (format_str % (datetime.now(), self._step, loss_value,
                                examples_per_sec, sec_per_batch))
+    print("haha")
     with tf.Session() as sess:
-      sess.run(tf.initialize_all_variables())
+      print("@@")
+      sess.run(tf.global_variables_initializer())
+      print("coor")
       coord = tf.train.Coordinator()
+      print("before start queue")
       threads = tf.train.start_queue_runners(coord=coord, sess=sess)
-      sess.run(train_op)
+      print("before run")
+      my_label = tf.get_collection('label')
+      print(sess.run(my_label))
+      print(sess.run([train_op]))
       print("This is %d step" %steps)
       step += 1
       coord.request_stop()
@@ -89,7 +97,7 @@ BATCH_SIZE = settings.BATCH_SIZE
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'
 LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt')
-
+numpy.set_printoptions(threshold=numpy.nan)
 #filenames = filenames[0:10]
 print('read in %d (data, labels) files' %len(filenames))
 

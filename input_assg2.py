@@ -52,10 +52,17 @@ def read_PAS(data_queue, label_queue):
 
   #label_reader = tf.WholeFileReader()
   label_name, label_file = data_reader.read(label_queue)
-  label = tf.image.decode_png(label_file,channels=1)
+  label = tf.image.decode_png(label_file,channels=1,dtype = tf.uint8)
   result.label_file_name = label_name
-  label = tf.reduce_sum(label,2)
   result.label = label
+  result.data = tf.image.resize_images(result.data,[50,50])
+  #result.label = tf.image.resize_area(result.label,[50,50])
+  result.label = tf.image.resize_images(result.label, [50,50], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=False)
+  #result.label = tf.decode_raw(result.label, tf.float32, little_endian=None, name=None)
+  #result.label = tf.image.resize_image_with_crop_or_pad(result.label,50,50)
+  result.label = tf.reduce_sum(result.label,2)
+  
+  tf.add_to_collection('label',result.label)
   #assert we are reading same data file and corresponding label file?
   #data_basename = os.path.basename(file_name)
   #label_basename = os.path.basename(label_name)
@@ -63,8 +70,8 @@ def read_PAS(data_queue, label_queue):
 
   #TODO: prepocess of image should go here
   #TODO: remove resize here
-  #result.data = tf.image.resize_images(result.data,[300,300])
-  #result.label = tf.image.resize_images(result.label,[300,300])
+  
+  
   #print(result.data)
   #print(result.label)
   result.data = tf.cast(result.data, tf.float32)
@@ -121,10 +128,13 @@ def generate_image_and_label_batch(image, label, min_queue_examples,
   # read 'batch_size' images + labels from the example queue.
   #TODO: min after queuesize properly from outside
   num_preprocess_threads = 16
+  '''
   if batch_size == 1:
     images,label_batch = tf.expand_dims(image, 0), tf.expand_dims(label, 0)
     print("Note: using batch_size == 1, only expend dimension of images and labels")
-  elif shuffle:
+  el
+  '''
+  if settings.shuffle:
     images, label_batch = tf.train.shuffle_batch(
         [image, label],
         batch_size=batch_size,
