@@ -8,4 +8,5 @@ depth = [3,96,256,384,384,256,4096,4096,21]
 depth = [3,21]
 MAX_STEPS = 1000000
 log_device_placement = False
-shuffle = False
+#shuffle = False
+shuffle = True
