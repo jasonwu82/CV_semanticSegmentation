@@ -11,11 +11,17 @@ filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets
 print('read in %d (data, labels) files' %len(filenames))
 data_queue,label_queue = create_queue(filenames,DATA_DIR,LABEL_DIR)
 result = read_PAS(data_queue, label_queue)
+images_batch = []
+labels_batch = []
+#if BATCH_SIZE > 1:
 images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
                                     batch_size=BATCH_SIZE, shuffle=True)
+#else:
+#	images_batch,labels_batch = tf.expand_dims(result.data, 0), tf.expand_dims(result.label, 0)
 
 
-init_op = tf.initialize_all_variables()
+#init_op = tf.initialize_all_variables()
+init_op = tf.global_variables_initializer()
 with tf.Session() as sess:
 	sess.run(init_op)
 	coord = tf.train.Coordinator()
@@ -29,7 +35,7 @@ with tf.Session() as sess:
 
 	# show image of the first element in batch
 	# to check correctness
-	for i in range(BATCH_SIZE):
+	for i in range(settings.BATCH_SIZE):
 		tmp = images_batch_tensor[i]
 		tmp = tmp.astype('uint8')
 		img = Image.fromarray(tmp, 'RGB')

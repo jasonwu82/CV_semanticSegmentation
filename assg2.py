@@ -4,58 +4,58 @@ import settings
 import train_pal
 
 def actual_train():
-	with tf.Graph().as_default():
-		#Returns and create (if necessary) the global step variable
-	    global_step = tf.contrib.framework.get_or_create_global_step()
-	    images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
-                                    batch_size=BATCH_SIZE, shuffle=True)
-	    # Get images and labels for CIFAR-10.
-	    #images, labels = cifar10.distorted_inputs()
+	#with tf.Graph().as_default():
+	#Returns and create (if necessary) the global step variable
+    global_step = tf.contrib.framework.get_or_create_global_step()
+    images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
+                                batch_size=BATCH_SIZE, shuffle=True)
+    # Get images and labels for CIFAR-10.
+    #images, labels = cifar10.distorted_inputs()
 
-	    # Build a Graph that computes the logits predictions from the
-	    # inference model.
-	    logits = train_pal.inference(images_batch)
+    # Build a Graph that computes the logits predictions from the
+    # inference model.
+    logits = train_pal.inference(images_batch)
 
-	    # Calculate loss.
-	    #loss = cifar10.loss(logits, labels)
+    # Calculate loss.
+    #loss = cifar10.loss(logits, labels)
 
-	    # Build a Graph that trains the model with one batch of examples and
-	    # updates the model parameters.
-	    train_op = cifar10.train(loss, global_step)
+    # Build a Graph that trains the model with one batch of examples and
+    # updates the model parameters.
+    train_op = cifar10.train(loss, global_step)
 
-	    class _LoggerHook(tf.train.SessionRunHook):
-	      """Logs loss and runtime."""
+    class _LoggerHook(tf.train.SessionRunHook):
+      """Logs loss and runtime."""
 
-	      def begin(self):
-	        self._step = -1
+      def begin(self):
+        self._step = -1
 
-	      def before_run(self, run_context):
-	        self._step += 1
-	        self._start_time = time.time()
-	        return tf.train.SessionRunArgs(loss)  # Asks for loss value.
+      def before_run(self, run_context):
+        self._step += 1
+        self._start_time = time.time()
+        return tf.train.SessionRunArgs(loss)  # Asks for loss value.
 
-	      def after_run(self, run_context, run_values):
-	        duration = time.time() - self._start_time
-	        loss_value = run_values.results
-	        if self._step % 10 == 0:
-	          num_examples_per_step = FLAGS.batch_size
-	          examples_per_sec = num_examples_per_step / duration
-	          sec_per_batch = float(duration)
+      def after_run(self, run_context, run_values):
+        duration = time.time() - self._start_time
+        loss_value = run_values.results
+        if self._step % 10 == 0:
+          num_examples_per_step = FLAGS.batch_size
+          examples_per_sec = num_examples_per_step / duration
+          sec_per_batch = float(duration)
 
-	          format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
-	                        'sec/batch)')
-	          print (format_str % (datetime.now(), self._step, loss_value,
-	                               examples_per_sec, sec_per_batch))
+          format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
+                        'sec/batch)')
+          print (format_str % (datetime.now(), self._step, loss_value,
+                               examples_per_sec, sec_per_batch))
 
-	    with tf.train.MonitoredTrainingSession(
-	        checkpoint_dir=FLAGS.train_dir,
-	        hooks=[tf.train.StopAtStepHook(last_step=FLAGS.max_steps),
-	               tf.train.NanTensorHook(loss),
-	               _LoggerHook()],
-	        config=tf.ConfigProto(
-	            log_device_placement=FLAGS.log_device_placement)) as mon_sess:
-	    	while not mon_sess.should_stop():
-	    		mon_sess.run(train_op)
+    with tf.train.MonitoredTrainingSession(
+        checkpoint_dir=FLAGS.train_dir,
+        hooks=[tf.train.StopAtStepHook(last_step=FLAGS.max_steps),
+               tf.train.NanTensorHook(loss),
+               _LoggerHook()],
+        config=tf.ConfigProto(
+            log_device_placement=FLAGS.log_device_placement)) as mon_sess:
+    	while not mon_sess.should_stop():
+    		mon_sess.run(train_op)
 BATCH_SIZE = settings.BATCH_SIZE
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'

@@ -62,8 +62,8 @@ def read_PAS(data_queue, label_queue):
 
   #TODO: prepocess of image should go here
   #TODO: remove resize here
-  result.data = tf.image.resize_images(result.data,[300,300])
-  result.label = tf.image.resize_images(result.label,[300,300])
+  #result.data = tf.image.resize_images(result.data,[300,300])
+  #result.label = tf.image.resize_images(result.label,[300,300])
   #print(result.data)
   #print(result.label)
   
@@ -120,7 +120,10 @@ def generate_image_and_label_batch(image, label, min_queue_examples,
   # read 'batch_size' images + labels from the example queue.
   #TODO: min after queuesize properly from outside
   num_preprocess_threads = 16
-  if shuffle:
+  if batch_size == 1:
+    images,label_batch = tf.expand_dims(image, 0), tf.expand_dims(label, 0)
+    print("Note: using batch_size == 1, only expend dimension of images and labels")
+  elif shuffle:
     images, label_batch = tf.train.shuffle_batch(
         [image, label],
         batch_size=batch_size,
