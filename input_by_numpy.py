@@ -41,7 +41,7 @@ class readIMage():
 		for i in range(len(queue_part)):
 			image = misc.imread(queue_part[i][0])
 			res_image.append(image)
-			label = misc.imread(queue_part[i][1])
+			label = misc.imread(queue_part[i][1],mode='P')
 			res_label.append(label)
 			
 		return (res_image,res_label)

@@ -34,19 +34,3 @@ def loss(logits, labels):
 	#decay terms (L2 loss).
 	return tf.add_n(tf.get_collection('losses'), name='total_loss')	
 	
-""" 
-init_a=tf.constant([[1,2,3,4],[4,3,2,1]])
-a=tf.Variable(init_a)
-start_op =  tf.initialize_all_variables()
-comparison = tf.equal( a, tf.constant(4) )
-conditional_assignment_op = a.assign( tf.where(comparison, tf.zeros_like(a), a) )
-
-with tf.Session() as session:
-    # Equivalent to: a = np.array( [1, 2, 3, 1] )
-    session.run( start_op )
-    print( a.eval() )
-
-    # Equivalent to: a[a==1] = 0
-    session.run( conditional_assignment_op )
-    print( a.eval() )
-"""
