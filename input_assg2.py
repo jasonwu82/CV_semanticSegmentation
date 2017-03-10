@@ -52,8 +52,9 @@ def read_PAS(data_queue, label_queue):
 
   #label_reader = tf.WholeFileReader()
   label_name, label_file = data_reader.read(label_queue)
-  label = tf.image.decode_png(label_file,channels=3)
+  label = tf.image.decode_png(label_file,channels=1)
   result.label_file_name = label_name
+  label = tf.reduce_sum(label,2)
   result.label = label
   #assert we are reading same data file and corresponding label file?
   #data_basename = os.path.basename(file_name)

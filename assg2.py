@@ -4,10 +4,13 @@ import settings
 import train_pal
 import time
 import datetime
+import loss_pal
 steps = 0
 def actual_train():
 	#with tf.Graph().as_default():
 	#Returns and create (if necessary) the global step variable
+    data_queue,label_queue = create_queue(filenames,DATA_DIR,LABEL_DIR)
+    result = read_PAS(data_queue, label_queue)
     global_step = tf.contrib.framework.get_or_create_global_step()
     images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
                                 batch_size=BATCH_SIZE, shuffle=True)
@@ -21,7 +24,12 @@ def actual_train():
     # Calculate loss.
     #loss = cifar10.loss(logits, labels)
     #TODO: remove this dummy
-    loss = tf.reduce_sum(logits)
+    #resized = tf.image.resize_images(input_tensor, [new_height, new_width])
+    
+    #tf.shape(labels_batch)
+    #loss = loss_pal.loss(logits,labels_batch)
+    loss = tf.zeros([20,20,20])
+    #loss = tf.reduce_sum(logits)
     # Build a Graph that trains the model with one batch of examples and
     # updates the model parameters.
     print("after reduce_sum")
@@ -84,8 +92,7 @@ filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets
 
 #filenames = filenames[0:10]
 print('read in %d (data, labels) files' %len(filenames))
-data_queue,label_queue = create_queue(filenames,DATA_DIR,LABEL_DIR)
-result = read_PAS(data_queue, label_queue)
+
 #images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
 #                                    batch_size=BATCH_SIZE, shuffle=True)
 actual_train()
