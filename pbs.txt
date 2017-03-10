@@ -1,0 +1,18 @@
+#!/bin/sh
+#PBS -S /bin/sh
+#PBS -N example_script
+#PBS -l nodes=1:ppn=2:gpus=1
+#PBS -l mem=4gb
+#PBS -q fluxg
+#PBS -A eecs542w17_fluxg
+#PBS -l qos=flux
+#PBS -M ytchang@umich.edu
+#PBS -m abe
+#PBS -l walltime=1:00:00
+#PBS -j oe
+#PBS -V
+module load python-anaconda3
+source activate tensorflow
+cd $pbs_o_workdir
+cd 542/CV_semanticSegmentation
+python test_input.py
