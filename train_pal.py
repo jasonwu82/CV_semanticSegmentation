@@ -82,13 +82,20 @@ def inference(images):
   # by replacing all instances of tf.get_variable() with tf.Variable().
   #
   # conv1
-
+  '''
   conv1 = conv_layer(images,settings.depth[0],settings.depth[1],'conv1')
   conv2 = conv_layer(conv1,settings.depth[1],settings.depth[2],'conv2')
   conv3 = conv_layer(conv2,settings.depth[2],settings.depth[3],'conv3')
   conv4 = conv_layer(conv3,settings.depth[3],settings.depth[4],'conv4')
   conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
-  
+  conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
+  '''
+  prev_in = images
+  for i in range(len(settings.depth)-1):
+    prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i))
+
+
+
   '''
   with tf.variable_scope('conv1') as scope:
     in_depth = settings.depth[0]
@@ -132,6 +139,7 @@ def inference(images):
                          strides=[1, 2, 2, 1], padding='SAME', name='pool2')
   '''
   # local3
+  '''
   with tf.variable_scope('local3') as scope:
     # Move everything into depth so we can perform a single matrix multiply.
     # Why reshape here??
@@ -162,8 +170,8 @@ def inference(images):
                               tf.constant_initializer(0.0))
     softmax_linear = tf.add(tf.matmul(local4, weights), biases, name=scope.name)
     _activation_summary(softmax_linear)
-
-  return softmax_linear
+  '''
+  return prev_in
 
 def train(total_loss, global_step):
   """Train CIFAR-10 model.
@@ -178,7 +186,7 @@ def train(total_loss, global_step):
   """
   # Variables that affect learning rate.
   num_batches_per_epoch = settings.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / settings.BATCH_SIZE
-  decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+  decay_steps = int(num_batches_per_epoch * settings.NUM_EPOCHS_PER_DECAY)
 
   # Decay the learning rate exponentially based on the number of steps.
   lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
@@ -214,7 +222,7 @@ def train(total_loss, global_step):
 
   # Track the moving averages of all trainable variables.
   variable_averages = tf.train.ExponentialMovingAverage(
-      MOVING_AVERAGE_DECAY, global_step)
+      settings.MOVING_AVERAGE_DECAY, global_step)
   variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
   with tf.control_dependencies([apply_gradient_op, variables_averages_op]):

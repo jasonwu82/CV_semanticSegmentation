@@ -2,7 +2,9 @@ from input_assg2 import *
 from PIL import Image
 import settings
 import train_pal
-
+import time
+import datetime
+steps = 0
 def actual_train():
 	#with tf.Graph().as_default():
 	#Returns and create (if necessary) the global step variable
@@ -11,18 +13,20 @@ def actual_train():
                                 batch_size=BATCH_SIZE, shuffle=True)
     # Get images and labels for CIFAR-10.
     #images, labels = cifar10.distorted_inputs()
-
+    print("after read")
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = train_pal.inference(images_batch)
-
+    print("after inference")
     # Calculate loss.
     #loss = cifar10.loss(logits, labels)
-
+    #TODO: remove this dummy
+    loss = tf.reduce_sum(logits)
     # Build a Graph that trains the model with one batch of examples and
     # updates the model parameters.
-    train_op = cifar10.train(loss, global_step)
-
+    print("after reduce_sum")
+    train_op = train_pal.train(loss, global_step)
+    print("after train")
     class _LoggerHook(tf.train.SessionRunHook):
       """Logs loss and runtime."""
 
@@ -46,16 +50,32 @@ def actual_train():
                         'sec/batch)')
           print (format_str % (datetime.now(), self._step, loss_value,
                                examples_per_sec, sec_per_batch))
-
+    with tf.Session() as sess:
+      sess.run(tf.initialize_all_variables())
+      coord = tf.train.Coordinator()
+      threads = tf.train.start_queue_runners(coord=coord, sess=sess)
+      sess.run(train_op)
+      print("This is %d step" %steps)
+      step += 1
+      coord.request_stop()
+      coord.join(threads, stop_grace_period_secs=10)
+    '''    
     with tf.train.MonitoredTrainingSession(
-        checkpoint_dir=FLAGS.train_dir,
-        hooks=[tf.train.StopAtStepHook(last_step=FLAGS.max_steps),
+        checkpoint_dir='checkpoints/',
+        hooks=[tf.train.StopAtStepHook(last_step=settings.MAX_STEPS),
                tf.train.NanTensorHook(loss),
                _LoggerHook()],
         config=tf.ConfigProto(
-            log_device_placement=FLAGS.log_device_placement)) as mon_sess:
-    	while not mon_sess.should_stop():
-    		mon_sess.run(train_op)
+            log_device_placement=settings.log_device_placement)) as mon_sess:
+      while not mon_sess.should_stop():
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord, sess=mon_sess)
+        print("This is %d step" %steps)
+        mon_sess.run(train_op)
+        coord.request_stop()
+        coord.join(threads, stop_grace_period_secs=10)
+      print("Train finish")
+    '''
 BATCH_SIZE = settings.BATCH_SIZE
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'

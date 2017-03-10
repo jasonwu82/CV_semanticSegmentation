@@ -1,7 +1,7 @@
 #project specific files
 TrainVal/
 *.tar
-
+checkpoints/
 #led / optimized / DLL files
 __pycache__/
 *.py[cod]

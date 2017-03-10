@@ -66,7 +66,7 @@ def read_PAS(data_queue, label_queue):
   #result.label = tf.image.resize_images(result.label,[300,300])
   #print(result.data)
   #print(result.label)
-  
+  result.data = tf.cast(result.data, tf.float32)
   '''
   label_bytes = 1  # 2 for CIFAR-100
   result.height = 32
