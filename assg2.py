@@ -63,7 +63,8 @@ def actual_train(images_batch,labels_batch):
                tf.train.NanTensorHook(loss),
                _LoggerHook()],
         config=tf.ConfigProto(
-            log_device_placement=settings.log_device_placement)) as sess:
+            log_device_placement=settings.log_device_placement),
+	save_checkpoint_secs=60) as sess:
       
       train_writer = tf.summary.FileWriter(settings.summaries_dir + '/train',
                                       sess.graph)

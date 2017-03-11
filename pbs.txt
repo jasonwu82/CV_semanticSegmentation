@@ -11,8 +11,9 @@
 #PBS -l walltime=1:00:00
 #PBS -j oe
 #PBS -V
+qsub -I
 module load python-anaconda3
 source activate tensorflow
 cd $pbs_o_workdir
 cd 542/CV_semanticSegmentation
-python test_input.py
+python assg2.py
