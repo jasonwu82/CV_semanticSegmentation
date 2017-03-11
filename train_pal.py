@@ -55,7 +55,7 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
     tf.add_to_collection('losses', weight_decay)
   return var
-def conv_layer(in_data,in_depth,out_depth,layer_name):
+def conv_layer(in_data,in_depth,out_depth,layer_name,conv_layer_dict={}):
   with tf.variable_scope(layer_name) as scope:
     #in_depth = settings.depth[layer_level]
     #out_depth = settings.depth[layer_level+1]
@@ -63,10 +63,13 @@ def conv_layer(in_data,in_depth,out_depth,layer_name):
                                          shape=[5, 5, in_depth, out_depth],
                                          stddev=5e-2,
                                          wd=0.0)
-    conv = tf.nn.conv2d(in_data, kernel, [1, 1, 1, 1], padding='SAME')
+    conv = tf.nn.conv2d(in_data, kernel, [1, 2, 2, 1], padding='SAME')
+    #tf.add_to_collection(layer_name,conv)
+    
     biases = _variable_on_cpu('biases', [out_depth], tf.constant_initializer(0.0))
     pre_activation = tf.nn.bias_add(conv, biases)
     layer_res = tf.nn.relu(pre_activation, name=scope.name)
+    conv_layer_dict[layer_name] = layer_res
     _activation_summary(layer_res)
     return layer_res
 def inference(images):
@@ -90,88 +93,29 @@ def inference(images):
   conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
   conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
   '''
+  conv_layer_dict = {}
+  #shape_dict = {}
   prev_in = images
   for i in range(len(settings.depth)-1):
-    prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i))
+    prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i),conv_layer_dict)
+
+  #for k in conv_layer_dict:
+  #  shape_dict[k] = tf.shape(conv_layer_dict[k])
+  #learn deconv layer
+  deconv32 = []
+  with tf.variable_scope('deconv_32') as scope:
+    #in_shape = tf.shape(conv_layer_dict['conv4'])
+    b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
+      ,initializer=tf.constant_initializer(0.0))
+    w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.depth[5]] )
+    out_shape = tf.pack([settings.BATCH_SIZE,tf.shape(images)[1],tf.shape(images)[2],settings.NUM_CLASSES])
+    deconv = tf.nn.conv2d_transpose(conv_layer_dict['conv4'], 
+      w, output_shape=out_shape, strides=[1, 1, 1, 1], padding="SAME")
+    deconv32 = tf.nn.bias_add(deconv, b)
 
 
-
-  '''
-  with tf.variable_scope('conv1') as scope:
-    in_depth = settings.depth[0]
-    out_depth = settings.depth[1]
-    kernel = _variable_with_weight_decay('weights',
-                                         shape=[5, 5, in_depth, out_depth],
-                                         stddev=5e-2,
-                                         wd=0.0)
-    conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
-    biases = _variable_on_cpu('biases', [out_depth], tf.constant_initializer(0.0))
-    pre_activation = tf.nn.bias_add(conv, biases)
-    conv1 = tf.nn.relu(pre_activation, name=scope.name)
-    _activation_summary(conv1)
-
-  # pool1
-  pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
-                         padding='SAME', name='pool1')
-  # norm1
-  norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                    name='norm1')
-
-  # conv2
-  with tf.variable_scope('conv2') as scope:
-    in_depth =settings.depth[1]
-    out_depth = settings.depth[2]
-    kernel = _variable_with_weight_decay('weights',
-                                         shape=[5, 5, in_depth, out_depth],
-                                         stddev=5e-2,
-                                         wd=0.0)
-    conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
-    biases = _variable_on_cpu('biases', [out_depth], tf.constant_initializer(0.1))
-    pre_activation = tf.nn.bias_add(conv, biases)
-    conv2 = tf.nn.relu(pre_activation, name=scope.name)
-    _activation_summary(conv2)
-
-  # norm2
-  norm2 = tf.nn.lrn(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                    name='norm2')
-  # pool2
-  pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1],
-                         strides=[1, 2, 2, 1], padding='SAME', name='pool2')
-  '''
-  # local3
-  '''
-  with tf.variable_scope('local3') as scope:
-    # Move everything into depth so we can perform a single matrix multiply.
-    # Why reshape here??
-    reshape = tf.reshape(pool2, [settings.BATCH_SIZE, -1])
-    dim = reshape.get_shape()[1].value
-    weights = _variable_with_weight_decay('weights', shape=[dim, 384],
-                                          stddev=0.04, wd=0.004)
-    biases = _variable_on_cpu('biases', [384], tf.constant_initializer(0.1))
-    local3 = tf.nn.relu(tf.matmul(reshape, weights) + biases, name=scope.name)
-    _activation_summary(local3)
-
-  # local4
-  with tf.variable_scope('local4') as scope:
-    weights = _variable_with_weight_decay('weights', shape=[384, 192],
-                                          stddev=0.04, wd=0.004)
-    biases = _variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
-    local4 = tf.nn.relu(tf.matmul(local3, weights) + biases, name=scope.name)
-    _activation_summary(local4)
-
-  # linear layer(WX + b),
-  # We don't apply softmax here because
-  # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
-  # and performs the softmax internally for efficiency.
-  with tf.variable_scope('softmax_linear') as scope:
-    weights = _variable_with_weight_decay('weights', [192, NUM_CLASSES],
-                                          stddev=1/192.0, wd=0.0)
-    biases = _variable_on_cpu('biases', [NUM_CLASSES],
-                              tf.constant_initializer(0.0))
-    softmax_linear = tf.add(tf.matmul(local4, weights), biases, name=scope.name)
-    _activation_summary(softmax_linear)
-  '''
-  return prev_in
+  
+  return deconv32
 
 def train(total_loss, global_step):
   """
@@ -229,4 +173,3 @@ def train(total_loss, global_step):
   return train_op
 
 
-#print(tf.get_collection('losses'))

@@ -41,9 +41,9 @@ def _upsample(value, num_classes, name, debug,
 			deconv = tf.Print(deconv, [tf.shape(deconv)], 
                               message='Shape of %s' % name,
                               summarize=4, first_n=1)
-			
+		deconv_out = deconv
 		#--- Sqeeze & Convert from float to uint8 (for testing upsample of raw image) 
-		deconv_out = tf.bitcast(tf.cast(tf.squeeze(deconv), tf.int8), tf.uint8)
+		#deconv_out = tf.bitcast(tf.cast(tf.squeeze(deconv), tf.int8), tf.uint8)
 		
 		#if debug:
 		#	deconv_out = tf.Print(deconv_out, [tf.shape(deconv_out)], 
@@ -57,7 +57,7 @@ def _upsample(value, num_classes, name, debug,
 ##===============================================================##
 def get_deconv_filter(f_shape):
 	width = f_shape[0]
-	heigh = f_shape[0]   ##should be f_shape[1] ????
+	heigh = f_shape[1]   ##should be f_shape[1] ????
 	f = ceil(width/2.0)
 	c = (2 * f - 1 - f % 2) / (2.0 * f)
 	bilinear = np.zeros([f_shape[0], f_shape[1]])

@@ -7,7 +7,15 @@ from datetime import datetime
 import loss_pal
 import numpy
 from input_by_numpy import *
+import upsample_pal
 
+def conv_transpose(tensor, out_channel, shape, strides, name=None):
+  out_shape = tensor.get_shape().as_list()
+  in_channel = out_shape[-1]
+  kernel = weight_variable([shape, shape, out_channel, in_channel], name=name)
+  shape[-1] = out_channel
+  return tf.nn.conv2d_transpose(x, kernel, output_shape=out_shape, strides=[1, strides, strides, 1],
+                                padding='SAME', name='conv_transpose')
 def actual_train(images_batch,labels_batch):
 	
     global_step = tf.contrib.framework.get_or_create_global_step()
@@ -22,9 +30,26 @@ def actual_train(images_batch,labels_batch):
     #loss = cifar10.loss(logits, labels)
     #TODO: remove this dummy
     #resized = tf.image.resize_images(input_tensor, [new_height, new_width])
-    
+    '''
+    upsample_op = conv_transpose(logits, 21, shape, strides, name=None)
+    tf.nn.conv2d_transpose(logits, kernel, output_shape=out_shape, strides=[1, strides, strides, 1],
+                                padding='SAME', name='conv_transpose')
+    upsample_op = upsample_pal._upsample(logits, num_classes=settings.NUM_CLASSES, 
+                                          name="upsample", debug=True,
+                                          ksize=64, stride=32)
+    # to resize upsample to same size of the label
+    #label_shape = tf.shape(labels_batch)
+    upsample_op_shape = tf.shape(upsample_op)
+    tf.expand_dims(labels_batch, 3)
+    #upsample_op = tf.image.resize_images(upsample_op, [label_shape[1],label_shape[2]])
+    labels_batch = tf.image.resize_images(labels_batch, [upsample_op_shape[1],upsample_op_shape[2]],
+      method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    labels_batch = labels_batch[:][:][:][0]
+    #tf.reshape(labels_batch, upsample_op_shape[0:3])
     #tf.shape(labels_batch)
+    '''
     loss = loss_pal.loss(logits,labels_batch)
+    #loss = loss_pal.loss(logits,labels_batch)
     #loss = tf.ones([1,2])
     #loss = tf.reduce_sum(logits)
     
