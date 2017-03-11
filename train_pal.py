@@ -3,6 +3,11 @@ import settings
 import re
 LEARNING_RATE_DECAY_FACTOR = settings.LEARNING_RATE_DECAY_FACTOR  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = settings.INITIAL_LEARNING_RATE       # Initial learning rate.
+def debug_tensor(tensor):
+  if settings.DEBUG:
+    return tf.Print(tensor, [tensor.name,tf.shape(tensor), tensor], message="Tensor is: ")
+  else:
+    return tensor
 def _activation_summary(x):
   """Helper to create summaries for activations.
   Creates a summary that provides a histogram of activations.
@@ -55,10 +60,11 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
     tf.add_to_collection('losses', weight_decay)
   return var
-def conv_layer(in_data,in_depth,out_depth,layer_name,conv_layer_dict={}):
+def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
   with tf.variable_scope(layer_name) as scope:
-    #in_depth = settings.depth[layer_level]
-    #out_depth = settings.depth[layer_level+1]
+    in_depth = depth[0]
+    out_depth = depth[1]
+    print(layer_name + " depth: ", depth)
     kernel = _variable_with_weight_decay('weights',
                                          shape=[5, 5, in_depth, out_depth],
                                          stddev=5e-2,
@@ -79,12 +85,6 @@ def inference(images):
   Returns:
     Logits.
   """
-  # We instantiate all variables using tf.get_variable() instead of
-  # tf.Variable() in order to share variables across multiple GPU training runs.
-  # If we only ran this model on a single GPU, we could simplify this function
-  # by replacing all instances of tf.get_variable() with tf.Variable().
-  #
-  # conv1
   '''
   conv1 = conv_layer(images,settings.depth[0],settings.depth[1],'conv1')
   conv2 = conv_layer(conv1,settings.depth[1],settings.depth[2],'conv2')
@@ -95,24 +95,35 @@ def inference(images):
   '''
   conv_layer_dict = {}
   #shape_dict = {}
-  prev_in = images
-  for i in range(len(settings.depth)-1):
-    prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i),conv_layer_dict)
-
+  #prev_in = images
+  #for i in range(len(settings.depth)-1):
+  #  prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i),conv_layer_dict)
+  conv1 = conv_layer(images,settings.layer_depth['conv1'],'conv1')
+  conv2 = conv_layer(conv1,settings.layer_depth['conv2'],'conv2')
+  conv3 = conv_layer(conv2,settings.layer_depth['conv3'],'conv3')
+  conv4 = conv_layer(conv3,settings.layer_depth['conv4'],'conv4')
+  conv5 = conv_layer(conv4,settings.layer_depth['conv5'],'conv5')
+  conv5 = debug_tensor(conv5)
+  #conv5_shape = debug_tensor(tf.shape(conv5))
   #for k in conv_layer_dict:
   #  shape_dict[k] = tf.shape(conv_layer_dict[k])
   #learn deconv layer
   deconv32 = []
   with tf.variable_scope('deconv_32') as scope:
     #in_shape = tf.shape(conv_layer_dict['conv4'])
+    #with tf.control_dependencies([conv5_shape]):
     b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
       ,initializer=tf.constant_initializer(0.0))
-    w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.depth[5]] )
+    #b = debug_tensor(b)
+    #w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.layer_depth['conv5'][1]] )
+    w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv5'][1]])
+    #w = debug_tensor(w)
     out_shape = tf.pack([settings.BATCH_SIZE,tf.shape(images)[1],tf.shape(images)[2],settings.NUM_CLASSES])
-    deconv = tf.nn.conv2d_transpose(conv_layer_dict['conv4'], 
-      w, output_shape=out_shape, strides=[1, 1, 1, 1], padding="SAME")
+    out_shape = debug_tensor(out_shape)
+    deconv = tf.nn.conv2d_transpose(conv5, 
+      w, output_shape=out_shape, strides=[1, 32, 32, 1], padding="SAME")
     deconv32 = tf.nn.bias_add(deconv, b)
-
+    deconv32 = debug_tensor(deconv32)
 
   
   return deconv32
