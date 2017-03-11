@@ -9,21 +9,15 @@ import numpy
 from input_by_numpy import *
 
 def actual_train(images_batch,labels_batch):
-	#with tf.Graph().as_default():
-	#Returns and create (if necessary) the global step variable
-    #data_queue,label_queue = create_queue(filenames,DATA_DIR,LABEL_DIR)
-    #result = read_PAS(data_queue, label_queue)
+	
     global_step = tf.contrib.framework.get_or_create_global_step()
-    #images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=3,
-    #                            batch_size=BATCH_SIZE, shuffle=True)
     
-    # Get images and labels for CIFAR-10.
-    #images, labels = cifar10.distorted_inputs()
-    print("after read")
+    
+    print("===> building graphs")
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = train_pal.inference(images_batch)
-    print("after inference")
+    
     # Calculate loss.
     #loss = cifar10.loss(logits, labels)
     #TODO: remove this dummy
@@ -33,11 +27,12 @@ def actual_train(images_batch,labels_batch):
     loss = loss_pal.loss(logits,labels_batch)
     #loss = tf.ones([1,2])
     #loss = tf.reduce_sum(logits)
-    # Build a Graph that trains the model with one batch of examples and
-    # updates the model parameters.
-    print("after reduce_sum")
+    
     train_op = train_pal.train(loss, global_step)
-    print("after train")
+    merged = tf.summary.merge_all()
+
+
+
     class _LoggerHook(tf.train.SessionRunHook):
       """Logs loss and runtime."""
 
@@ -61,7 +56,7 @@ def actual_train(images_batch,labels_batch):
                         'sec/batch)')
           print (format_str % (datetime.now(), self._step, loss_value,
                                examples_per_sec, sec_per_batch))
-    steps = 0
+    
     with tf.train.MonitoredTrainingSession(
         checkpoint_dir='checkpoints/',
         hooks=[tf.train.StopAtStepHook(last_step=settings.MAX_STEPS),
@@ -69,12 +64,19 @@ def actual_train(images_batch,labels_batch):
                _LoggerHook()],
         config=tf.ConfigProto(
             log_device_placement=settings.log_device_placement)) as sess:
+      
+      train_writer = tf.summary.FileWriter(settings.summaries_dir + '/train',
+                                      sess.graph)
       while not sess.should_stop():
+        print("===>training")
+
+
         (res_image,res_label) = readimg.read_next_natch()
         feed_dict={images_batch: res_image,label_batch:res_label}
-        sess.run([train_op],feed_dict=feed_dict)
-        print("This is %d step" %steps)
-        steps += 1
+        summary,_,global_step_out = sess.run([merged,train_op,global_step],feed_dict=feed_dict)
+        train_writer.add_summary(summary, global_step_out)
+        print("This is %d step" %global_step_out)
+        #steps += 1
     '''
     with tf.Session() as sess:
       
@@ -89,24 +91,6 @@ def actual_train(images_batch,labels_batch):
         print("This is %d step" %steps)
         steps += 1
     '''
-      
-    '''  
-    with tf.train.MonitoredTrainingSession(
-        checkpoint_dir='checkpoints/',
-        hooks=[tf.train.StopAtStepHook(last_step=settings.MAX_STEPS),
-               tf.train.NanTensorHook(loss),
-               _LoggerHook()],
-        config=tf.ConfigProto(
-            log_device_placement=settings.log_device_placement)) as mon_sess:
-      while not mon_sess.should_stop():
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(coord=coord, sess=mon_sess)
-        print("This is %d step" %steps)
-        mon_sess.run(train_op)
-        coord.request_stop()
-        coord.join(threads, stop_grace_period_secs=10)
-      print("Train finish")
-    '''
 BATCH_SIZE = settings.BATCH_SIZE
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'
@@ -116,11 +100,9 @@ numpy.set_printoptions(threshold=numpy.nan)
 readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
   './data/TrainVal/VOCdevkit/VOC2011/JPEGImages',
   './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass')
-#filenames = filenames[0:10]
+
 print('read in %d (data, labels) files' %len(filenames))
 images_batch = tf.placeholder(tf.float32, shape=(settings.BATCH_SIZE,None,None,3),name='imageHolder')
 label_batch = tf.placeholder(tf.uint8,shape=(settings.BATCH_SIZE,None,None),name='labelHolder')
-#images_batch,labels_batch = generate_image_and_label_batch(result.data, result.label, min_queue_examples=20,
-#                                    batch_size=BATCH_SIZE, shuffle=True)
 actual_train(images_batch,label_batch)
 

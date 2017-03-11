@@ -174,9 +174,7 @@ def inference(images):
   return prev_in
 
 def train(total_loss, global_step):
-  """Train CIFAR-10 model.
-  Create an optimizer and apply to all trainable variables. Add moving
-  average for all trainable variables.
+  """
   Args:
     total_loss: Total loss from loss().
     global_step: Integer Variable counting the number of training steps
@@ -209,7 +207,7 @@ def train(total_loss, global_step):
   apply_gradient_op = opt.apply_gradients(grads, global_step=global_step)
 
   # Add histograms for trainable variables.
-  '''
+  
   for var in tf.trainable_variables():
     tf.summary.histogram(var.op.name, var)
 
@@ -218,7 +216,7 @@ def train(total_loss, global_step):
   for grad, var in grads:
     if grad is not None:
       tf.summary.histogram(var.op.name + '/gradients', grad)
-  '''
+  
 
   # Track the moving averages of all trainable variables.
   variable_averages = tf.train.ExponentialMovingAverage(
