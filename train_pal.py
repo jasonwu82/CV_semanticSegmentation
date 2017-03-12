@@ -5,7 +5,7 @@ LEARNING_RATE_DECAY_FACTOR = settings.LEARNING_RATE_DECAY_FACTOR  # Learning rat
 INITIAL_LEARNING_RATE = settings.INITIAL_LEARNING_RATE       # Initial learning rate.
 def debug_tensor(tensor):
   if settings.DEBUG:
-    return tf.Print(tensor, [tensor.name,tf.shape(tensor), tensor], message="Tensor is: ")
+    return tf.Print(tensor, [tensor.name,tf.shape(tensor), tensor], message="Tensor is: ",summarize=100)
   else:
     return tensor
 def _activation_summary(x):
@@ -67,10 +67,12 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
     print(layer_name + " depth: ", depth)
     kernel = _variable_with_weight_decay('weights',
                                          shape=[5, 5, in_depth, out_depth],
-                                         stddev=5e-2,
+                                         stddev=5e-1,
                                          wd=0.0)
     if layer_name=='conv1':
-      kernel = debug_tensor(kernel)
+      tensor = kernel
+      kernel = tf.Print(tensor, [tensor.name,tf.shape(tensor), tensor], message="Tensor is: ",summarize=100)
+      #kernel = debug_tensor(kernel)
     conv = tf.nn.conv2d(in_data, kernel, [1, 2, 2, 1], padding='SAME')
     #tf.add_to_collection(layer_name,conv)
     
@@ -89,14 +91,8 @@ def inference(images):
   Returns:
     Logits.
   """
-  '''
-  conv1 = conv_layer(images,settings.depth[0],settings.depth[1],'conv1')
-  conv2 = conv_layer(conv1,settings.depth[1],settings.depth[2],'conv2')
-  conv3 = conv_layer(conv2,settings.depth[2],settings.depth[3],'conv3')
-  conv4 = conv_layer(conv3,settings.depth[3],settings.depth[4],'conv4')
-  conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
-  conv5 = conv_layer(conv4,settings.depth[4],settings.depth[5],'conv5')
-  '''
+  
+  images = debug_tensor(images)
   conv_layer_dict = {}
   #shape_dict = {}
   #prev_in = images
@@ -107,7 +103,7 @@ def inference(images):
   #conv3 = conv_layer(conv2,settings.layer_depth['conv3'],'conv3')
   #conv4 = conv_layer(conv3,settings.layer_depth['conv4'],'conv4')
   #conv5 = conv_layer(conv4,settings.layer_depth['conv5'],'conv5')
-  conv5 = debug_tensor(conv1)
+  conv1 = debug_tensor(conv1)
   #conv5_shape = debug_tensor(tf.shape(conv5))
   #for k in conv_layer_dict:
   #  shape_dict[k] = tf.shape(conv_layer_dict[k])
@@ -116,16 +112,18 @@ def inference(images):
   with tf.variable_scope('deconv_32') as scope:
     #in_shape = tf.shape(conv_layer_dict['conv4'])
     #with tf.control_dependencies([conv5_shape]):
-    #b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
-    #  ,initializer=tf.constant_initializer(0.0))
-    b = tf.zeros(shape=[settings.NUM_CLASSES])
+    b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
+      ,initializer=tf.constant_initializer(0.0))
+    #b = tf.zeros(shape=[settings.NUM_CLASSES])
+    b = debug_tensor(b)
     #b = debug_tensor(b)
-    #w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.layer_depth['conv5'][1]] )
-    w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]])
+    w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]] )
+    #w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]])
+    w = debug_tensor(w)
     #w = debug_tensor(w)
     out_shape = tf.pack([settings.BATCH_SIZE,tf.shape(images)[1],tf.shape(images)[2],settings.NUM_CLASSES])
     out_shape = debug_tensor(out_shape)
-    deconv = tf.nn.conv2d_transpose(conv5, 
+    deconv = tf.nn.conv2d_transpose(conv1, 
       w, output_shape=out_shape, strides=[1, 2, 2, 1], padding="SAME")
     deconv32 = tf.nn.bias_add(deconv, b)
     deconv32 = debug_tensor(deconv32)

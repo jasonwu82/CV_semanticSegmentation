@@ -99,7 +99,8 @@ LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 #need to make a test.txt later to read test data later
 filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt')
 numpy.set_printoptions(threshold=numpy.nan)
-readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
+#readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
+readimg = readIMage('./test_input.txt',
   './data/TrainVal/VOCdevkit/VOC2011/JPEGImages',
   './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass')
 
