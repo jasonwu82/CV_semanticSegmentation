@@ -73,7 +73,8 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
       tensor = kernel
       kernel = tf.Print(tensor, [tensor.name,tf.shape(tensor), tensor], message="Tensor is: ",summarize=100)
       #kernel = debug_tensor(kernel)
-    conv = tf.nn.conv2d(in_data, kernel, [1, 2, 2, 1], padding='SAME')
+    #conv = tf.nn.conv2d(in_data, kernel, [1, 2, 2, 1], padding='SAME')
+    conv = tf.nn.conv2d(in_data, kernel, [1, 1, 1, 1], padding='SAME')
     #tf.add_to_collection(layer_name,conv)
     
     biases = _variable_on_cpu('biases', [out_depth], tf.constant_initializer(0.0))
@@ -83,6 +84,7 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
     #layer_res = tf.nn.relu(pre_activation, name=scope.name)
     #layer_res = tf.sigmoid(pre_activation, name=scope.name)
     layer_res = tf.nn.relu6(pre_activation, name=scope.name)
+    layer_res = tf.nn.max_pool(layer_res, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
     conv_layer_dict[layer_name] = layer_res
     _activation_summary(layer_res)
     return layer_res
@@ -119,7 +121,7 @@ def inference(images):
     #b = tf.zeros(shape=[settings.NUM_CLASSES])
     b = debug_tensor(b)
     #b = debug_tensor(b)
-    w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]] )
+    w = tf.get_variable("weight",shape=[16, 16, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]] )
     #w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]])
     w = debug_tensor(w)
     #w = debug_tensor(w)
