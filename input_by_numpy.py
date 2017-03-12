@@ -23,7 +23,9 @@ class readIMage():
 		prev_num = self.cur_num
 		self.cur_num += batch
 		if self.cur_num > len(self.cur_queue):
-			self.cur_queue = image_label_queue[:]
+			prev_num = 0
+			self.cur_num = batch
+			self.cur_queue = self.image_label_queue[:]
 			if shuffle:
 				random.shuffle(self.cur_queue)
 		print(self.cur_queue[prev_num:self.cur_num])
