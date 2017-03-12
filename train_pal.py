@@ -121,7 +121,8 @@ def inference(images):
     #b = tf.zeros(shape=[settings.NUM_CLASSES])
     b = debug_tensor(b)
     #b = debug_tensor(b)
-    w = tf.get_variable("weight",shape=[32,32, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]] )
+    w = tf.get_variable("weight",shape=[32,32, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]],
+     initializer=tf.truncated_normal_initializer(stddev=5e-2))
     #w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]])
     w = debug_tensor(w)
     #w = debug_tensor(w)
