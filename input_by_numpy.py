@@ -42,6 +42,12 @@ class readIMage():
 		res_label = []
 		for i in range(len(queue_part)):
 			image = misc.imread(queue_part[i][0])
+			#mean = np.mean(image)
+			#variance = np.var(image)
+			#print("image type = " + str(image.dtype))
+			#image.astype(float)
+			#image = np.array([(x-mean)/variance for x in image])
+			#image.astype(np.uint8)
 			res_image.append(image)
 			label = misc.imread(queue_part[i][1],mode='P')
 			res_label.append(label)

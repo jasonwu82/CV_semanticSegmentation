@@ -69,7 +69,9 @@ def eval_test(images_batch,labels_batch):
             
             tmp2=res_label[i]
             tmp2=numpy.uint8(tmp2)
-            
+            print("==================> ground truth <==================")
+            print(tmp)
+            print("==================> prediction <==================")
             print(tmp3)
             img = Image.fromarray(tmp3*10,'P')
             img.show()
@@ -98,7 +100,8 @@ LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 
 #need to make a test.txt later to read test data later
 filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt')
-numpy.set_printoptions(threshold=numpy.nan)
+#numpy.set_printoptions(threshold=numpy.nan)
+numpy.set_printoptions(threshold=1000,edgeitems=10)
 #readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
 readimg = readIMage('./test_input.txt',
   './data/TrainVal/VOCdevkit/VOC2011/JPEGImages',
