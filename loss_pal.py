@@ -32,5 +32,5 @@ def loss(logits, labels):
 	
 	#The total loss is defined as the cross entropy loss plus all of the weight
 	#decay terms (L2 loss).
-	return tf.add_n(tf.get_collection('losses'), name='total_loss')	
-	
+	#return tf.add_n([cross_entropy_mean], name='total_loss')	
+	return cross_entropy_mean
