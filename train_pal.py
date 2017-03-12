@@ -69,10 +69,14 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
                                          shape=[5, 5, in_depth, out_depth],
                                          stddev=5e-2,
                                          wd=0.0)
+    if layer_name=='conv3':
+      kernel = debug_tensor(kernel)
     conv = tf.nn.conv2d(in_data, kernel, [1, 2, 2, 1], padding='SAME')
     #tf.add_to_collection(layer_name,conv)
     
     biases = _variable_on_cpu('biases', [out_depth], tf.constant_initializer(0.0))
+    if layer_name == 'conv3':
+      biases = debug_tensor(biases)
     pre_activation = tf.nn.bias_add(conv, biases)
     layer_res = tf.nn.relu(pre_activation, name=scope.name)
     conv_layer_dict[layer_name] = layer_res
@@ -112,8 +116,9 @@ def inference(images):
   with tf.variable_scope('deconv_32') as scope:
     #in_shape = tf.shape(conv_layer_dict['conv4'])
     #with tf.control_dependencies([conv5_shape]):
-    b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
-      ,initializer=tf.constant_initializer(0.0))
+    #b = tf.get_variable('bias',shape=[settings.NUM_CLASSES]
+    #  ,initializer=tf.constant_initializer(0.0))
+    b = tf.zeros(shape=[settings.NUM_CLASSES])
     #b = debug_tensor(b)
     #w = tf.get_variable("weight",shape=[5, 5, settings.NUM_CLASSES,settings.layer_depth['conv5'][1]] )
     w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv5'][1]])
@@ -147,6 +152,7 @@ def train(total_loss, global_step):
                                   decay_steps,
                                   LEARNING_RATE_DECAY_FACTOR,
                                   staircase=True)
+  lr = debug_tensor(lr)
   tf.summary.scalar('learning_rate', lr)
 
   # Generate moving averages of all losses and associated summaries.
