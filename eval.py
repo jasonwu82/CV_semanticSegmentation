@@ -9,6 +9,8 @@ import loss_pal
 import numpy
 from input_by_numpy import *
 import scipy as scp
+from label_color import color_map, label_to_rgb
+
 def eval_test(images_batch,labels_batch):
     #variable_averages = tf.train.ExponentialMovingAverage(
     #    cifar10.MOVING_AVERAGE_DECAY)
@@ -59,26 +61,37 @@ def eval_test(images_batch,labels_batch):
             
             
             
-            tmp = numpy.sum(groundTruth,axis=0)
-            tmp=numpy.sum(tmp,axis=2)
-            tmp=numpy.uint8(tmp)
+            groundTruth=numpy.squeeze(groundTruth)
+            groundTruth=numpy.uint8(groundTruth)
             
-            tmp3 = numpy.sum(preds,axis=0)
-            tmp3=numpy.sum(tmp3,axis=2)
-            tmp3=numpy.uint8(tmp3)            
-            
+
             tmp2=res_label[i]
             tmp2=numpy.uint8(tmp2)
+            
+            #print(tmp)
+            
+            #print(tmp3)
+            #img = Image.fromarray(tmp3*10,'P')
             print("==================> ground truth <==================")
-            print(tmp)
-            print("==================> prediction <==================")
-            print(tmp3)
-            img = Image.fromarray(tmp3*10,'P')
+            print(groundTruth)
+
+            preds=numpy.squeeze(preds)
+            preds=numpy.uint8(preds)   
+            print("==================> prediction <==================")         
+            print(preds)
+
+            
+            img = Image.fromarray(label_to_rgb(preds,cmap),'RGB')
+
             img.show()
-            img = Image.fromarray(tmp*10,'P')
+            
+            img = Image.fromarray(label_to_rgb(groundTruth,cmap),'RGB')
             img.show()
-            img = Image.fromarray(tmp2*10,'P')
-            img.show()
+
+            #tmp2=res_label[i]
+            #tmp2=numpy.uint8(tmp2)
+            #img = Image.fromarray(tmp2*10,'P')
+            #img.show()
             """
             
             tmp=color_image(groundTruth, num_classes=20)
@@ -110,7 +123,7 @@ readimg = readIMage('./test_input.txt',
 print('read in %d (data, labels) files' %len(filenames))
 images_batch = tf.placeholder(tf.float32, shape=(1,None,None,3),name='imageHolder')
 label_batch = tf.placeholder(tf.uint8,shape=(1,None,None),name='labelHolder')
-
+cmap=color_map(settings.NUM_CLASSES)
 eval_test(images_batch,label_batch)        
         
 """       
