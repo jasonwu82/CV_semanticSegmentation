@@ -7,6 +7,7 @@ import scipy.misc as misc
 class readIMage():
 	def __init__(self,filename_file,data_dir_path,label_dir_path):
 		filenames = self._read_filenames_from_txt(filename_file)
+		print('read in %d (data, labels) files' %len(filenames))
 		data_filenames = [os.path.join(data_dir_path,f+'.jpg') for f in filenames]
 		label_filenames = [os.path.join(label_dir_path,f+'.png') for f in filenames]
 

@@ -24,7 +24,7 @@ def actual_train(images_batch,labels_batch):
     print("===> building graphs")
     # Build a Graph that computes the logits predictions from the
     # inference model.
-    logits = train_pal.inference(images_batch)
+    logits = train_pal.inference(images_batch,isTrain = True)
     
     # Calculate loss.
     #loss = cifar10.loss(logits, labels)
@@ -121,14 +121,14 @@ BATCH_SIZE = settings.BATCH_SIZE
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'
 LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
-filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt')
+#filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt')
 numpy.set_printoptions(threshold=numpy.nan)
 #readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
 readimg = readIMage('./input_person.txt',
   './data/TrainVal/VOCdevkit/VOC2011/JPEGImages',
   './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass')
 
-print('read in %d (data, labels) files' %len(filenames))
+
 images_batch = tf.placeholder(tf.float32, shape=(settings.BATCH_SIZE,None,None,3),name='imageHolder')
 label_batch = tf.placeholder(tf.uint8,shape=(settings.BATCH_SIZE,None,None),name='labelHolder')
 actual_train(images_batch,label_batch)
