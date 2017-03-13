@@ -81,9 +81,9 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={}):
     if layer_name == 'conv1':
       biases = debug_tensor(biases)
     pre_activation = tf.nn.bias_add(conv, biases)
-    #layer_res = tf.nn.relu(pre_activation, name=scope.name)
+    layer_res = tf.nn.relu(pre_activation, name=scope.name)
     #layer_res = tf.sigmoid(pre_activation, name=scope.name)
-    layer_res = tf.nn.relu6(pre_activation, name=scope.name)
+    #layer_res = tf.nn.relu6(pre_activation, name=scope.name)
     layer_res = tf.nn.max_pool(layer_res, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
     conv_layer_dict[layer_name] = layer_res
     _activation_summary(layer_res)
@@ -104,8 +104,8 @@ def inference(images):
   #  prev_in = conv_layer(prev_in,settings.depth[i],settings.depth[i+1],'conv'+ str(i),conv_layer_dict)
   conv1 = conv_layer(images,settings.layer_depth['conv1'],'conv1')
   conv2 = conv_layer(conv1,settings.layer_depth['conv2'],'conv2')
-  #conv3 = conv_layer(conv2,settings.layer_depth['conv3'],'conv3')
-  conv4 = conv_layer(conv2,settings.layer_depth['conv4'],'conv4')
+  conv3 = conv_layer(conv2,settings.layer_depth['conv3'],'conv3')
+  conv4 = conv_layer(conv3,settings.layer_depth['conv4'],'conv4')
   conv_last = conv_layer(conv4,settings.layer_depth['conv_last'],'conv_last')
   conv_last = debug_tensor(conv_last)
   #conv5_shape = debug_tensor(tf.shape(conv5))
@@ -121,15 +121,16 @@ def inference(images):
     #b = tf.zeros(shape=[settings.NUM_CLASSES])
     b = debug_tensor(b)
     #b = debug_tensor(b)
-    w = tf.get_variable("weight",shape=[32,32, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]],
-     initializer=tf.truncated_normal_initializer(stddev=5e-2))
+    w = tf.get_variable("weight",shape=[64,64, settings.NUM_CLASSES,settings.layer_depth['conv_last'][1]],
+     #initializer=tf.truncated_normal_initializer(stddev=5e-2))
+     initializer=tf.constant_initializer(0.25))
     #w = tf.ones([5, 5, settings.NUM_CLASSES,settings.layer_depth['conv1'][1]])
     w = debug_tensor(w)
     #w = debug_tensor(w)
-    out_shape = tf.pack([settings.BATCH_SIZE,tf.shape(images)[1],tf.shape(images)[2],settings.NUM_CLASSES])
+    out_shape = tf.stack([settings.BATCH_SIZE,tf.shape(images)[1],tf.shape(images)[2],settings.NUM_CLASSES])
     out_shape = debug_tensor(out_shape)
     deconv = tf.nn.conv2d_transpose(conv_last, 
-      w, output_shape=out_shape, strides=[1, 16, 16, 1], padding="SAME")
+      w, output_shape=out_shape, strides=[1, 32, 32, 1], padding="SAME")
     deconv32 = tf.nn.bias_add(deconv, b)
     deconv32 = debug_tensor(deconv32)
 
