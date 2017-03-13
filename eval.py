@@ -86,10 +86,10 @@ def eval_test(images_batch,labels_batch):
             img = Image.fromarray(label_to_rgb(preds,cmap),'RGB')
 
             img.show()
-            img.save("prediction.png","PNG")
+            img.save("results/prediction_%d.png"%i,"PNG")
             img = Image.fromarray(label_to_rgb(groundTruth,cmap),'RGB')
             img.show()
-            img.save("groundTruth.png","PNG")
+            img.save("results/groundTruth_%d.png"%i,"PNG")
             #tmp2=res_label[i]
             #tmp2=numpy.uint8(tmp2)
             #img = Image.fromarray(tmp2*10,'P')

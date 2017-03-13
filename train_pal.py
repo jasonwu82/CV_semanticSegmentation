@@ -60,7 +60,7 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
     tf.add_to_collection('losses', weight_decay)
   return var
-def conv_layer(in_data,depth,layer_name,conv_layer_dict={},isTrain=False):
+def conv_layer(in_data,depth,layer_name,isTrain=False):
   with tf.variable_scope(layer_name) as scope:
     in_depth = depth[0]
     out_depth = depth[1]
@@ -95,7 +95,7 @@ def conv_layer(in_data,depth,layer_name,conv_layer_dict={},isTrain=False):
         keep_prob = 0.7
       print(layer_name, " use dropout at probability = ", keep_prob)
       layer_res = tf.nn.dropout(layer_res, keep_prob=keep_prob)
-    conv_layer_dict[layer_name] = layer_res
+    #conv_layer_dict[layer_name] = layer_res
     _activation_summary(layer_res)
     return layer_res
 def inference(images,isTrain=False):
@@ -107,15 +107,15 @@ def inference(images,isTrain=False):
   """
   
   images = debug_tensor(images)
-  conv_layer_dict = {}
+  #conv_layer_dict = {}
   
   conv1 = conv_layer(images,settings.layer_depth['conv1'],'conv1')
   conv2 = conv_layer(conv1,settings.layer_depth['conv2'],'conv2')
   conv3 = conv_layer(conv2,settings.layer_depth['conv3'],'conv3')
   conv4 = conv_layer(conv3,settings.layer_depth['conv4'],'conv4')
   conv5 = conv_layer(conv4,settings.layer_depth['conv5'],'conv5')
-  conv_6_nopool = conv_layer(conv5,settings.layer_depth['conv_6_nopool'],'conv_6_nopool',isTrain = True)
-  conv_7_nopool = conv_layer(conv_6_nopool,settings.layer_depth['conv_7_nopool'],'conv_7_nopool',isTrain = True)
+  conv_6_nopool = conv_layer(conv5,settings.layer_depth['conv_6_nopool'],'conv_6_nopool',isTrain)
+  conv_7_nopool = conv_layer(conv_6_nopool,settings.layer_depth['conv_7_nopool'],'conv_7_nopool',isTrain)
   conv_7_nopool = debug_tensor(conv_7_nopool)
 
   deconv32 = []
