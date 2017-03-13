@@ -55,7 +55,7 @@ def eval_test(images_batch,labels_batch):
         total_acc=0
         for i in range(BATCH_SIZE):
             feed_dict={images_batch: numpy.expand_dims(res_image[i],axis=0),label_batch:numpy.expand_dims(res_label[i],axis=0)}
-            (preds,groundTruth,logits,cur_acc)=sess.run([top_indices,labels,logits,accur],feed_dict=feed_dict)
+            (preds,groundTruth,cur_acc)=sess.run([top_indices,labels,accur],feed_dict=feed_dict)
             print("current accuracy: {}".format(cur_acc))
             total_acc+=cur_acc
             
@@ -68,17 +68,14 @@ def eval_test(images_batch,labels_batch):
             tmp2=res_label[i]
             tmp2=numpy.uint8(tmp2)
             
-            #print(tmp)
             
-            #print(tmp3)
-            #img = Image.fromarray(tmp3*10,'P')
-            print("==================> ground truth <==================")
-            print(groundTruth)
+            #print("==================> ground truth <==================")
+            #print(groundTruth)
 
             preds=numpy.squeeze(preds)
             preds=numpy.uint8(preds)   
-            print("==================> prediction <==================")         
-            print(preds)
+            #print("==================> prediction <==================")         
+            #print(preds)
             
             
             #logits=numpy.squeeze(logits)
@@ -111,7 +108,7 @@ def color_image(image, num_classes=20):
     mycm = mpl.cm.get_cmap('Set1')
     return mycm(norm(image))        
 """    
-BATCH_SIZE = 1
+BATCH_SIZE = 5
 
 DATA_DIR = './data/TrainVal/VOCdevkit/VOC2011/JPEGImages'
 LABEL_DIR = './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
@@ -121,7 +118,7 @@ filenames = read_filenames_from_txt('./data/TrainVal/VOCdevkit/VOC2011/ImageSets
 #numpy.set_printoptions(threshold=numpy.nan)
 numpy.set_printoptions(threshold=1000,edgeitems=10)
 #readimg = readIMage('./data/TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt',
-readimg = readIMage('./test_input.txt',
+readimg = readIMage('./input_person_test.txt',
   './data/TrainVal/VOCdevkit/VOC2011/JPEGImages',
   './data/TrainVal/VOCdevkit/VOC2011/SegmentationClass')
 
