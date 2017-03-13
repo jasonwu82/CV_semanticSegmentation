@@ -55,7 +55,7 @@ def eval_test(images_batch,labels_batch):
         total_acc=0
         for i in range(BATCH_SIZE):
             feed_dict={images_batch: numpy.expand_dims(res_image[i],axis=0),label_batch:numpy.expand_dims(res_label[i],axis=0)}
-            (preds,groundTruth,cur_acc)=sess.run([top_indices,labels,accur],feed_dict=feed_dict)
+            (preds,groundTruth,logits,cur_acc)=sess.run([top_indices,labels,logits,accur],feed_dict=feed_dict)
             print("current accuracy: {}".format(cur_acc))
             total_acc+=cur_acc
             
@@ -79,7 +79,12 @@ def eval_test(images_batch,labels_batch):
             preds=numpy.uint8(preds)   
             print("==================> prediction <==================")         
             print(preds)
-
+            
+            
+            #logits=numpy.squeeze(logits)
+            #logits=numpy.uint8(logits)   
+            #print("==================> logits <==================")         
+            #print(logits)
             
             img = Image.fromarray(label_to_rgb(preds,cmap),'RGB')
 
